@@ -1,9 +1,10 @@
 #pragma once
 #include "main.h"
 #include <string>
-#include <iostream>
-#include <streambuf>
+#include <fstream>
 #include <sstream>
+#include <iostream>
+
 
 namespace readDatThing {
 	namespace PGM_read {
