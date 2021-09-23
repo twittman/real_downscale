@@ -1,25 +1,6 @@
 #include "main.h"
 #include "read_PGM_as_string.hpp"
 
-// Read the Blob and edit the output array
-//void read_PGM_as_string( const char* filename, std::list<std::string>& lines, int& width, int& height )
-//{
-//	lines.clear();
-//	std::ifstream file( filename );
-//	std::string s;
-//	while ( std::getline( file, s ) )
-//		lines.push_back( s );
-//	lines.pop_front();
-//	lines.pop_front();
-//	lines.pop_front();
-//
-//	std::ostringstream stringReplace;
-//
-//	stringReplace << width << "x" << height << ":";
-//	std::string width_height = stringReplace.str();
-//	lines.push_front( width_height );
-//}
-
 void defocussBlurr( int radius, std::vector<Magick::Coordinate> vertices, int diameter, int distAmnt_01, int distAmnt_02, int& debug )
 {
 	std::string xDisp;
@@ -123,96 +104,6 @@ void defocussBlurr( int radius, std::vector<Magick::Coordinate> vertices, int di
 	std::filesystem::remove( "poly.pgm" );
 }
 
-//void polyVertices( int radius, int num, double rad1, double rad2, double offset, double diameter, int& debug )
-//{
-//	int distAmnt_01 = rad1 / 7;
-//	int distAmnt_02 = rad1 / 13;
-//	//std::cout << distAmnt << std::endl;
-//
-//	double pi = 2 * acos( 0.0 );
-//	int number_01 = num;
-//	double radius_01 = rad1;
-//	double radius_02 = rad2;
-//	double offset_01 = offset;
-//	double xx;
-//	double yy;
-//
-//	std::vector<Magick::Coordinate> vertice_locations;
-//	for ( int i = 0; i < number_01; i++ ) {
-//		double angle = i * static_cast<double>( 360 ) / number_01 + offset;
-//		xx = radius_02 * cos( angle * pi / 180 ) + radius_01 - 0.5;
-//		yy = radius_02 * sin( angle * pi / 180 ) + radius_01 - 0.5;
-//		vertice_locations.emplace_back( xx, yy );
-//	}
-//	defocussBlurr( radius, vertice_locations, diameter, distAmnt_01, distAmnt_02, debug );
-//}
-
-
-void convolve_first( Magick::Image Defocussed, Magick::Blob defocusBlob, std::string& output, auto& Width, auto& Height, std::string& size )
-{
-	try {
-		std::ifstream textOpen;
-		textOpen.open( "poly_new.txt" );
-		std::string str( ( std::istreambuf_iterator<char>( textOpen ) ),
-						 std::istreambuf_iterator<char>() );
-		std::string kernel_motion = str;
-		textOpen.close();
-		std::filesystem::remove( "poly_new.txt" );
-		std::filesystem::remove( "poly.txt" );
-
-
-		// add grain before convolve
-		std::random_device rd;
-		std::mt19937 generator( rd() );
-
-		std::uniform_real_distribution<double> noiseQ( 0.0, 0.11 );
-		double noiseZ = noiseQ( rd );
-		std::uniform_real_distribution<double> blurQ( 0.2, 0.8 );
-		double blurZ = blurQ( rd );
-
-		Magick::Image grainLayer( Magick::Geometry( size ), "fractal" ), singlePixel( "1x1", "#f2f2f2" );
-
-		std::uniform_int_distribution<int> randomRow( 0 + 20, Width - 20 );
-		std::uniform_int_distribution<int> randomCol( 0 + 20, Height - 20 );
-
-		std::uniform_int_distribution<int> randomPixelNum( 64, 192 );
-		int randomPixel = randomPixelNum( rd );
-
-		grainLayer.alpha( false );
-		grainLayer.alpha( true );
-		grainLayer.addNoise( Magick::LaplacianNoise );
-		grainLayer.addNoise( Magick::PoissonNoise );
-		grainLayer.colorSpace( Magick::GRAYColorspace );
-		grainLayer.gaussianBlur( 0, blurZ );
-		grainLayer.evaluate( Magick::AlphaChannel, Magick::MultiplyEvaluateOperator, noiseZ );
-		Defocussed.composite( grainLayer, 0, 0, Magick::OverlayCompositeOp );
-		// end of add grain before convolve
-
-		for ( int i = 0; i < randomPixel; i++ ) {
-			int pixRow = randomRow( rd );
-			int pixCol = randomCol( rd );
-			Defocussed.composite( singlePixel, pixRow, pixCol, Magick::OverCompositeOp );
-		}
-
-
-
-		// convolve with defocus blur kernel
-		Defocussed.artifact( "convolve:scale", "\!" );
-		Defocussed.morphology( Magick::ConvolveMorphology, kernel_motion );
-		Defocussed.depth( 8 );
-		Defocussed.colorSpace( Magick::sRGBColorspace );
-		Defocussed.crop( Magick::Geometry( Width, Height, 64, 64 ) );
-		Defocussed.filterType( Magick::PointFilter );
-		Defocussed.resize( "25%" );
-		Defocussed.magick( "PNG" );
-		Defocussed.write( output );
-		// end convolve with defocus blur kernel
-	}
-	catch ( Magick::Exception& error_ ) {
-		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
-	}
-}
-
 int main(int argc, char** argv)
 {
 	cxxopts::Options options( argv[0] );
@@ -314,6 +205,6 @@ int main(int argc, char** argv)
 	// end pad image edges
 
 	// process both blur kernels
-	convolve_first( Defocussed, defocusBlob, output, Width, Height, size );
+	convolve( Defocussed, defocusBlob, output, Width, Height, size );
 
 }
