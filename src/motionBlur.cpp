@@ -1,11 +1,28 @@
 #include "motionBlur.h"
 
+// Read the Blob and edit the output array
+void read_PGM_as_string_mB( const char* filename, std::list<std::string>& lines, int& width, int& height )
+{
+	lines.clear();
+	std::ifstream file( filename );
+	std::string s;
+	while ( std::getline( file, s ) )
+		lines.push_back( s );
+	lines.pop_front();
+	lines.pop_front();
+	lines.pop_front();
+
+	std::ostringstream stringReplace;
+
+	stringReplace << width << "x" << height << ":";
+	std::string width_height = stringReplace.str();
+	lines.push_front( width_height );
+}
+
 
 // Create the polygon shape
 void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debug )
 {
-	Magick::InitializeMagick;
-
 
 	Magick::Image polyGon( Magick::Geometry( maxlength, maxlength ), "black" ), mBpolyBlobPGM;
 	Magick::Blob mBpolyBlob, mBpolyPGM;
@@ -27,8 +44,8 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 
 	mBpolyBlobPGM.read( mBpolyBlob );
 
-	int polyWidth = mBpolyBlobPGM.baseColumns();
-	int polyHeight = mBpolyBlobPGM.baseRows();
+	int polyWidth = static_cast<int>(mBpolyBlobPGM.baseColumns());
+	int polyHeight = static_cast<int>(mBpolyBlobPGM.baseRows());
 
 	std::string dimensions = std::to_string( polyWidth ) + "x" + std::to_string( polyHeight );
 
@@ -39,7 +56,7 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 
 
 	std::list<std::string> lines;
-	readDatThing::PGM_read::PGM_fix( "mBpoly.txt", lines, polyWidth, polyHeight );
+	read_PGM_as_string_mB( "mBpoly.txt", lines, polyWidth, polyHeight );
 	std::ofstream text;
 	text.open( "mBpoly_new.txt" );
 	for ( auto v : lines ) {

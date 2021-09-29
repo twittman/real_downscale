@@ -1,12 +1,9 @@
 #pragma once
 #include <Magick++.h>
-#include "read_PGM_as_string.hpp"
 #include "defocusBlur.h"
 #include "motionBlur.h"
 #include "convolve.h"
 #include <cxxopts.hpp>
-#include <streambuf>
-#include <sstream>
 #include <cmath>
 #include <fstream>
 #include <streambuf>
