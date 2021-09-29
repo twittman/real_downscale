@@ -24,7 +24,7 @@ void read_PGM_as_string_mB( const char* filename, std::list<std::string>& lines,
 void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debug )
 {
 
-	Magick::Image polyGon( Magick::Geometry( maxlength, maxlength ), "black" ), mBpolyBlobPGM;
+	Magick::Image polyGon( Magick::Geometry( maxlength, maxlength ), "black" ), mBpolyBlobPGM, polyGon8x;
 	Magick::Blob mBpolyBlob, mBpolyPGM;
 	polyGon.magick( "PNG" );
 	polyGon.strokeWidth( 1 );
@@ -39,7 +39,12 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 	polyGon.write( &mBpolyBlob ); // Write to memory
 	if ( debug == 1 ) {
 		polyGon.write( "mBpoly.png" ); // Write to png
+		polyGon8x = polyGon;
+		polyGon8x.filterType( Magick::PointFilter );
+		polyGon8x.resize( "800%" );
+		polyGon8x.write( "mBpoly_8x.png" );
 	}
+
 
 
 	mBpolyBlobPGM.read( mBpolyBlob );
@@ -64,7 +69,7 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 		//std::cout << v << std::endl;
 	}
 	text.close();
-	std::filesystem::remove( "poly.txt" );
+	std::filesystem::remove( "mBpoly.txt" );
 	std::filesystem::remove( "mBpoly.pgm" );
 }
 // generate vertices
