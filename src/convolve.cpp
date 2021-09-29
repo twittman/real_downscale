@@ -14,7 +14,7 @@ void convolve( Magick::Image& Defocussed_002,
 		std::string kernel_motion = str;
 		textOpen.close();
 		if ( debug == 1 ) {
-			std::cout << "Kernel: " << kernel_motion << "\n";
+			std::cout << "\nKernel: " << kernel_motion << "\n";
 		}
 
 		std::filesystem::remove( polyStr );
