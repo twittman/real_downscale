@@ -23,54 +23,63 @@ void read_PGM_as_string_mB( const char* filename, std::list<std::string>& lines,
 // Create the polygon shape
 void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debug )
 {
+	try {
+		Magick::Image polyGon( Magick::Geometry( maxlength, maxlength ), "black" ), mBpolyBlobPGM, polyGon8x;
+		Magick::Blob mBpolyBlob, mBpolyPGM;
+		polyGon.magick( "PNG" );
+		polyGon.strokeWidth( 1 );
+		polyGon.strokeColor( "white" );
+		polyGon.strokeAntiAlias( true );
+		//polyGon.fillColor( "red" );
+		polyGon.draw( Magick::DrawableBezier( vertices ) );
 
-	Magick::Image polyGon( Magick::Geometry( maxlength, maxlength ), "black" ), mBpolyBlobPGM, polyGon8x;
-	Magick::Blob mBpolyBlob, mBpolyPGM;
-	polyGon.magick( "PNG" );
-	polyGon.strokeWidth( 1 );
-	polyGon.strokeColor( "white" );
-	polyGon.strokeAntiAlias( true );
-	//polyGon.fillColor( "red" );
-	polyGon.draw( Magick::DrawableBezier( vertices ) );
+		try {
+			polyGon.trim();
+		}
+		catch ( Magick::Exception& error_ ) {
+			std::cerr << "Caught exception, Trimming Motion blur kernel: " << error_.what() << std::endl;
+		}
+		polyGon.borderColor( "Black" );
+		polyGon.border( Magick::Geometry( 3, 3, 3, 3 ) );
+		polyGon.write( &mBpolyBlob ); // Write to memory
+		if ( debug == 1 ) {
+			polyGon.write( "mBpoly.png" ); // Write to png
+			polyGon8x = polyGon;
+			polyGon8x.filterType( Magick::PointFilter );
+			polyGon8x.resize( "800%" );
+			polyGon8x.write( "mBpoly_8x.png" );
+		}
 
-	polyGon.trim();
-	polyGon.borderColor( "Black" );
-	polyGon.border( Magick::Geometry( 3, 3, 3, 3 ) );
-	polyGon.write( &mBpolyBlob ); // Write to memory
-	if ( debug == 1 ) {
-		polyGon.write( "mBpoly.png" ); // Write to png
-		polyGon8x = polyGon;
-		polyGon8x.filterType( Magick::PointFilter );
-		polyGon8x.resize( "800%" );
-		polyGon8x.write( "mBpoly_8x.png" );
+
+
+		mBpolyBlobPGM.read( mBpolyBlob );
+
+		int polyWidth = static_cast<int>( mBpolyBlobPGM.baseColumns() );
+		int polyHeight = static_cast<int>( mBpolyBlobPGM.baseRows() );
+
+		std::string dimensions = std::to_string( polyWidth ) + "x" + std::to_string( polyHeight );
+
+		mBpolyBlobPGM.magick( "PGM" );
+		mBpolyBlobPGM.compressType( Magick::NoCompression );
+		mBpolyBlobPGM.depth( 8 );
+		mBpolyBlobPGM.write( "mBpoly.txt" );
+
+
+		std::list<std::string> lines;
+		read_PGM_as_string_mB( "mBpoly.txt", lines, polyWidth, polyHeight );
+		std::ofstream text;
+		text.open( "mBpoly_new.txt" );
+		for ( auto v : lines ) {
+			text << v << "\n";
+			//std::cout << v << std::endl;
+		}
+		text.close();
+		std::filesystem::remove( "mBpoly.txt" );
+		std::filesystem::remove( "mBpoly.pgm" );
 	}
-
-
-
-	mBpolyBlobPGM.read( mBpolyBlob );
-
-	int polyWidth = static_cast<int>(mBpolyBlobPGM.baseColumns());
-	int polyHeight = static_cast<int>(mBpolyBlobPGM.baseRows());
-
-	std::string dimensions = std::to_string( polyWidth ) + "x" + std::to_string( polyHeight );
-
-	mBpolyBlobPGM.magick( "PGM" );
-	mBpolyBlobPGM.compressType( Magick::NoCompression );
-	mBpolyBlobPGM.depth( 8 );
-	mBpolyBlobPGM.write( "mBpoly.txt" );
-
-
-	std::list<std::string> lines;
-	read_PGM_as_string_mB( "mBpoly.txt", lines, polyWidth, polyHeight );
-	std::ofstream text;
-	text.open( "mBpoly_new.txt" );
-	for ( auto v : lines ) {
-		text << v << "\n";
-		//std::cout << v << std::endl;
+	catch ( Magick::Exception& error_ ) {
+		std::cerr << "Caught exception, motion blur kernel: " << error_.what() << std::endl;
 	}
-	text.close();
-	std::filesystem::remove( "mBpoly.txt" );
-	std::filesystem::remove( "mBpoly.pgm" );
 }
 // generate vertices
 void motion_blur_kernel( int& maxlength, int& vertices, int& debug )

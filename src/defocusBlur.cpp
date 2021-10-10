@@ -72,6 +72,21 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			yDisp = "0x5";
 		}
 
+		double radii;
+		double radiusF;
+		if ( radius == 3 ) {
+			radii = 6;
+			radiusF = 6;
+		}
+		else if ( radius == 2 ) {
+			radii = 10;
+			radiusF = 10;
+		}
+		else {
+			radii = radius;
+			radiusF = radius;
+		}
+
 		Magick::Image polyGon( Magick::Geometry( diameter, diameter ), "black" ),
 			displaceNoise( Magick::Geometry( diameter, diameter ), "fractal" ),
 			polyGon8x,
@@ -122,8 +137,21 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		}
 
 
-		if ( radius < 3 ) {
+		if ( radius == 3 ) {
 			polyGon.resize( "50%" );
+		}
+		else if ( radius == 2 ) {
+			polyGon.resize( "25%" );
+		}
+		else if ( radius == 1 ) {
+			polyGon.resize( "16%" );
+		}
+
+		try {
+			polyGon.trim();
+		}
+		catch ( Magick::Exception& error_ ) {
+			std::cerr << "Caught exception Trimming first convolution: " << error_.what() << std::endl;
 		}
 
 		polyGon.write( &polyBlob ); // Write to memory

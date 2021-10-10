@@ -3,6 +3,8 @@
 #include "defocusBlur.h"
 #include "motionBlur.h"
 #include "convolve.h"
+#include "uni_grain.h"
+#include "jPegger.h"
 #include <cxxopts.hpp>
 #include <cmath>
 #include <fstream>

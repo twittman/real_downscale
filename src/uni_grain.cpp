@@ -1,18 +1,18 @@
-#include "make_it_grain.h"
+#include "uni_grain.h"
 
-void makeitgrain( Magick::Image& Defocussed_002,
-				  Magick::Blob& defocusBlob,
+void uni_grain( Magick::Image& input,
 				  size_t Width, size_t Height,
 				  std::string size )
 {
-	// add grain before convolve
+
 	std::random_device rd;
 	std::mt19937 generator( rd() );
 
-	std::uniform_real_distribution<double> noiseQ( 0.0, 0.11 );
+	std::uniform_real_distribution<double> noiseQ( 0.0, 0.13 );
 	double noiseZ = noiseQ( rd );
-	std::uniform_real_distribution<double> blurQ( 0.2, 0.8 );
+	std::uniform_real_distribution<double> blurQ( 0.1, 0.8 );
 	double blurZ = blurQ( rd );
+
 	std::uniform_int_distribution<int> ranPix( 0, 9 );
 	int randPixels = ranPix( rd );
 
@@ -31,15 +31,15 @@ void makeitgrain( Magick::Image& Defocussed_002,
 	grainLayer.colorSpace( Magick::GRAYColorspace );
 	grainLayer.gaussianBlur( 0, blurZ );
 	grainLayer.evaluate( Magick::AlphaChannel, Magick::MultiplyEvaluateOperator, noiseZ );
-	Defocussed_002.composite( grainLayer, 0, 0, Magick::OverlayCompositeOp );
-	// end of add grain before convolve
+	input.composite( grainLayer, 0, 0, Magick::OverlayCompositeOp );
 
-	if ( randPixels <= 2 ) {
+
+	if ( randPixels <= 1 ) {
 		for ( int i = 0; i < randomPixel; i++ ) {
 			int pixRow = randomRow( rd );
 			int pixCol = randomCol( rd );
-			Defocussed_002.composite( singlePixel, pixRow, pixCol, Magick::OverCompositeOp );
+			input.composite( singlePixel, pixRow, pixCol, Magick::OverCompositeOp );
 		}
-	}
+	};
 
 }
