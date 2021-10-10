@@ -228,6 +228,20 @@ int main(int argc, char** argv)
 		std::cout << output << " Directory created" << "\n";
 	}
 
+	// first check if text files exist from previous run //
+	std::vector<std::string> filesForRemove = { "poly.txt",
+												"poly.pgm",
+												"poly_new.txt",
+												"mBpoly.txt",
+												"mBpoly.pgm",
+												"mBpoly_new.txt" };
+	for ( auto&& files : filesForRemove ) {
+		if ( std::filesystem::exists( files ) )
+		{
+			std::filesystem::remove( files );
+		}
+	}
+
 	runOnDir( input, inputDir, output, outputDir, 
 			  radius, sides, debug, length, vertice, scale );
 

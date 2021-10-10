@@ -74,8 +74,8 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 			//std::cout << v << std::endl;
 		}
 		text.close();
-		std::filesystem::remove( "mBpoly.txt" );
-		std::filesystem::remove( "mBpoly.pgm" );
+		//std::filesystem::remove( "mBpoly.txt" );
+		//std::filesystem::remove( "mBpoly.pgm" );
 	}
 	catch ( Magick::Exception& error_ ) {
 		std::cerr << "Caught exception, motion blur kernel: " << error_.what() << std::endl;

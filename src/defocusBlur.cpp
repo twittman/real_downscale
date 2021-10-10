@@ -187,10 +187,9 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			//std::cout << v << std::endl;
 		}
 		text.close();
-		std::filesystem::remove( "poly.txt" );
-		std::filesystem::remove( "poly.pgm" );
-		//print( lines );
-		//std::cout << "Text file closed\n";
+		//std::filesystem::remove( "poly.txt" );
+		//std::filesystem::remove( "poly.pgm" );
+
 	}
 	catch ( Magick::Exception& error_ ) {
 		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
