@@ -40,7 +40,9 @@ void runProcess( std::string& inFile, std::string& outFile, double& radius, int&
 		try {
 			
 			polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, debug );
-			motion_blur_kernel( length, vertice, debug );
+			if ( length >= 3 ) {
+				motion_blur_kernel( length, vertice, debug );
+			};
 		} catch ( Magick::Exception& error_ ) {
 			std::cerr << "Caught exception Polygon generation: " << error_.what() << std::endl;
 		}
@@ -79,7 +81,7 @@ void runProcess( std::string& inFile, std::string& outFile, double& radius, int&
 
 		// process blur kernel(s)
 		convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
-		if ( length >= 4 ) {
+		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
 		};
 
