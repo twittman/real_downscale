@@ -84,6 +84,19 @@ void runProcess( std::string& inFile, std::string& outFile, double& radius, int&
 		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
 		};
+		// check for txt files and remove all
+		std::vector<std::string> filesForRemove = { "poly.txt",
+													"poly.pgm",
+													"poly_new.txt",
+													"mBpoly.txt",
+													"mBpoly.pgm",
+													"mBpoly_new.txt" };
+		for ( auto&& files : filesForRemove ) {
+			if ( std::filesystem::exists( files ) )
+			{
+				std::filesystem::remove( files );
+			}
+		}
 
 
 		std::string outputScale;
@@ -247,93 +260,4 @@ int main(int argc, char** argv)
 	runOnDir( input, inputDir, output, outputDir, 
 			  radius, sides, debug, length, vertice, scale );
 
-	//Magick::EnableOpenCL();
-	//Magick::InitializeMagick(*argv);
-	//Magick::Image inImg, Defocussed, Defocussed_002, DefocussedOutput;
-
-	//inImg.read( input );
-	//inImg.depth( 16 );
-	//inImg.colorSpace( Magick::RGBColorspace );
-
-	//// DEFOCUS BLUR
-	////double radii = radius;
-	//double radii;
-	//if ( radius < 3 ) {
-	//	radii = 3;
-	//}
-	//else {
-	//	radii = radius;
-	//}
-	//double diameter = radii * 2;
-	//int radiVert = sides;
-
-	//if ( debug == 1 ) {
-	//	std::cout << "Radii: " << radii << "\n"
-	//		<< "Diameter: " << diameter << "\n"
-	//		<< "Sides: " << radiVert << std::endl;;
-	//}
-
-	//// create defocus polygon shape
-	//Magick::Blob polyBlob, polyPGM, defocusBlob;
-	//polyVertices_De( polyBlob, polyPGM, static_cast<int>(radius), radiVert, radii, radii, -90.0, diameter, debug );
-	//motion_blur_kernel( length, vertice, debug );
-
-
-	//int width = static_cast<int>(inImg.baseColumns());
-	//int height = static_cast<int>(inImg.baseRows());
-	//std::string size = std::to_string( width ) + "x" + std::to_string( height );
-
-	//Defocussed = inImg;
-
-	//// pad image edges
-	//auto Width = Defocussed.columns();
-	//auto Height = Defocussed.rows();
-
-	//std::string stretchImg;
-	//stretchImg += std::to_string( Width + 128 );
-	//stretchImg += "x";
-	//stretchImg += std::to_string( Height + 128 );
-	//stretchImg += "-";
-	//stretchImg += std::to_string( 64 );
-	//stretchImg += "-";
-	//stretchImg += std::to_string( 64 );
-
-	//auto argNum = 1;
-	//double* argList = new double[argNum];
-	//argList[0] = 0.0;
-	//bool bestFit = Magick::MagickFalse;
-	//Defocussed.artifact( "distort:viewport", stretchImg );
-	//Defocussed.virtualPixelMethod( Magick::MirrorVirtualPixelMethod );
-	//Defocussed.distort( Magick::ScaleRotateTranslateDistortion, argNum, argList, bestFit );
-	//Defocussed.repage();
-	//Defocussed.magick( "PNG" );
-	//Defocussed.write( &defocusBlob );
-	//// end pad image edges
-
-	//// process blur kernel(s)
-	//convolve( Defocussed_002, defocusBlob, output, Width, Height, size, "poly_new.txt", debug);
-	//if ( length >= 4 ) {
-	//	convolve( Defocussed_002, defocusBlob, output, Width, Height, size, "mBpoly_new.txt", debug );
-	//};
-
-
-	//std::string outputScale;
-	//switch ( scale ) {
-	//	case 1:
-	//		outputScale = "100%"; break;
-	//	case 2:
-	//		outputScale = "50%"; break;
-	//	case 3:
-	//		outputScale = "33.3%"; break;
-	//	case 4:
-	//		outputScale = "25%"; break;
-	//	default:
-	//		outputScale = "25%"; break;
-	//}
-
-	//DefocussedOutput.read( defocusBlob );
-	//DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
-	//DefocussedOutput.filterType( Magick::PointFilter );
-	//DefocussedOutput.resize( outputScale );
-	//DefocussedOutput.write( output );
 }

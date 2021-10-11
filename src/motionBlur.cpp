@@ -30,7 +30,6 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 		polyGon.strokeWidth( 1 );
 		polyGon.strokeColor( "white" );
 		polyGon.strokeAntiAlias( true );
-		//polyGon.fillColor( "red" );
 		polyGon.draw( Magick::DrawableBezier( vertices ) );
 
 		try {
@@ -71,11 +70,8 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 		text.open( "mBpoly_new.txt" );
 		for ( auto v : lines ) {
 			text << v << "\n";
-			//std::cout << v << std::endl;
 		}
 		text.close();
-		//std::filesystem::remove( "mBpoly.txt" );
-		//std::filesystem::remove( "mBpoly.pgm" );
 	}
 	catch ( Magick::Exception& error_ ) {
 		std::cerr << "Caught exception, motion blur kernel: " << error_.what() << std::endl;

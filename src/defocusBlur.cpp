@@ -171,13 +171,11 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 
 		std::string dimensions = std::to_string( polyWidth ) + "x" + std::to_string( polyHeight );
 
-		//std::cout << "Writing polygon kernel to txt file\n";
 		polyBlobPGM.magick( "PGM" );
 		polyBlobPGM.compressType( Magick::NoCompression );
 		polyBlobPGM.depth( 8 );
 		polyBlobPGM.write( "poly.txt" );
 
-		//std::cout << "Reading txt file and modifying\n";
 		std::list<std::string> lines;
 		read_PGM_as_string( "poly.txt", lines, polyWidth, polyHeight );
 		std::ofstream text;
@@ -187,8 +185,6 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			//std::cout << v << std::endl;
 		}
 		text.close();
-		//std::filesystem::remove( "poly.txt" );
-		//std::filesystem::remove( "poly.pgm" );
 
 	}
 	catch ( Magick::Exception& error_ ) {
