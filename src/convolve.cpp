@@ -17,10 +17,8 @@ void convolve( Magick::Image& Defocussed_002,
 			std::cout << "\nKernel: " << kernel_motion << "\n";
 		}
 
-		std::filesystem::remove( polyStr );
-		std::filesystem::remove( "poly.txt" );
-
-
+		//std::filesystem::remove( polyStr );
+		//std::filesystem::remove( "poly.txt" );
 
 		// convolve with defocus blur kernel
 		Defocussed_002.read( defocusBlob );
@@ -32,20 +30,6 @@ void convolve( Magick::Image& Defocussed_002,
 		Defocussed_002.magick( "PNG" );
 		Defocussed_002.write( &defocusBlob );
 		// end convolve with defocus blur kernel
-
-		//// check for txt files and remove all
-		//std::vector<std::string> filesForRemove = { "poly.txt",
-		//											"poly.pgm",
-		//											"poly_new.txt", 
-		//											"mBpoly.txt", 
-		//											"mBpoly.pgm",
-		//											"mBpoly_new.txt" };
-		//for ( auto&& files : filesForRemove ) {
-		//	if ( std::filesystem::exists( files ))
-		//	{
-		//		std::filesystem::remove( files );
-		//	} 
-		//}
 
 	}
 	catch ( Magick::Exception& error_ ) {

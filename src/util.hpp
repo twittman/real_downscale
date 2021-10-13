@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <iostream>
 
 namespace twitls {
 	namespace vec_ops {

@@ -13,7 +13,7 @@ void makeitgrain( Magick::Image& Defocussed_002,
 	double noiseZ = noiseQ( rd );
 	std::uniform_real_distribution<double> blurQ( 0.2, 0.8 );
 	double blurZ = blurQ( rd );
-	std::uniform_int_distribution<int> ranPix( 0, 9 );
+	std::uniform_int_distribution<int> ranPix( 0, 32 );
 	int randPixels = ranPix( rd );
 
 	Magick::Image grainLayer( Magick::Geometry( size ), "fractal" ), singlePixel( "1x1", "#f2f2f2" );
@@ -34,7 +34,7 @@ void makeitgrain( Magick::Image& Defocussed_002,
 	Defocussed_002.composite( grainLayer, 0, 0, Magick::OverlayCompositeOp );
 	// end of add grain before convolve
 
-	if ( randPixels <= 2 ) {
+	if ( randPixels <= 1 ) {
 		for ( int i = 0; i < randomPixel; i++ ) {
 			int pixRow = randomRow( rd );
 			int pixCol = randomCol( rd );

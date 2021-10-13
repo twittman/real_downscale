@@ -5,7 +5,9 @@
 #include "convolve.h"
 #include "uni_grain.h"
 #include "jPegger.h"
+#include "util.hpp"
 #include <cxxopts.hpp>
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <streambuf>

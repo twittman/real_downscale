@@ -1,6 +1,9 @@
 #include "main.h"
 
-void runProcess( std::string& inFile, std::string& outFile, double& radius, int& sides, int debug, int& length, int& vertice, int& scale )
+void runProcess( std::string& inFile, std::string& outFile, 
+				 double& radius, int& sides, int debug, 
+				 int& length, int& vertice, int& scale,
+				 double& grain, double& jpeg )
 {
 	try {
 		Magick::EnableOpenCL();
@@ -113,28 +116,33 @@ void runProcess( std::string& inFile, std::string& outFile, double& radius, int&
 				outputScale = "25%"; break;
 		}
 
+		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
+
 		DefocussedOutput.read( defocusBlob );
 		DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
 		DefocussedOutput.filterType( Magick::PointFilter );
 		DefocussedOutput.resize( outputScale );
 
+		int minJ = 60;
+		int maxJ = 90;
 
-		// add grain before final save
-		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
-		uni_grain( DefocussedOutput, Width, Height, size_img );
+		int grainChance = twitls::randgen::randomNumber( 0, 100 );
+		int jpegChance = twitls::randgen::randomNumber( 0, 100 );
 
-		std::random_device rd;
-		std::mt19937 generator( rd() );
-		std::uniform_int_distribution<int> jP1( 0, 8 );
-		int jP2 = jP1( rd );
+		double grainPercent = 100 * grain;
+		double jpegPercent = 100 * jpeg;
 
-		if ( jP2 <= 2 ) {
-			// add jpeg compression
-			int min = 66;
-			int max = 95;
-			jPegger( DefocussedOutput, min, max );
+		//std::cout << "Grain percentage: " << static_cast<int>( grainPercent ) << "\n";
+		//std::cout << "Jpeg percentage: " << static_cast<int>( jpegPercent ) << "\n";
+
+		if ( grainPercent <= static_cast<int>( grainPercent ) ) {
+			uni_grain( DefocussedOutput, Width, Height, size_img );
 		}
 
+		if ( jpegPercent <= static_cast<int>( jpegPercent ) ) {
+			//jPegger( DefocussedOutput, minJ, maxJ );
+			jPeggMulti( DefocussedOutput, minJ, maxJ );
+		}
 		DefocussedOutput.write( outFile );
 	}
 	catch ( Magick::Exception& error_ ) {
@@ -157,8 +165,10 @@ void runOnDir( std::string& input,
 			   std::string& output,
 			   std::filesystem::path& outputDir, 
 			   double& radius, int& sides, int& debug,
-			   int& length, int& vertice, int& scale )
+			   int& length, int& vertice, int& scale,
+			   double& grain, double& jpeg )
 {
+	int countFiles = twitls::count::countfiles( input );
 	for ( const auto& entry : std::filesystem::directory_iterator( input ) ) {
 		if ( is_regular_file( entry.path() ) ) {
 
@@ -175,10 +185,15 @@ void runOnDir( std::string& input,
 			std::string outFileDir = outputDir.string();
 			std::string outFile = outFileDir + '\\' + fileNoPathNoEXT + ".png";
 
-			runProcess( inFileEXT, outFile, radius, sides, debug, length, vertice, scale );
+			runProcess( inFileEXT, outFile, radius, sides, debug, length, vertice, scale, grain, jpeg );
+
+			if ( debug != 1 ) {
+				std::cout << "\rNumber of files remaining: " << --countFiles << "\t" << std::flush;
+			}
 
 		}
 	}
+
 }
 
 int main(int argc, char** argv)
@@ -187,6 +202,8 @@ int main(int argc, char** argv)
 	options.add_options()
 		( "i, input", "input image", cxxopts::value<std::string>() )
 		( "o, output", "output image", cxxopts::value<std::string>() )
+		( "g, grain", "Grain percentage", cxxopts::value<double>() )
+		( "j, jpeg", "Jpeg percentage", cxxopts::value<double>() )
 		( "k, scale", "output image scale", cxxopts::value<int>() )
 		( "r, radius", "defocus radius", cxxopts::value<double>() )
 		( "s, sides", "defocus kernel sides", cxxopts::value<int>() )
@@ -205,6 +222,8 @@ int main(int argc, char** argv)
 
 	std::string input;
 	std::string output;
+	double grain;
+	double jpeg;
 	int scale;
 	double radius;
 	int sides;
@@ -217,6 +236,12 @@ int main(int argc, char** argv)
 
 	if ( result.count( "output" ) )
 		output = result["output"].as<std::string>();
+
+	if ( result.count( "grain" ) )
+		grain = result["grain"].as<double>();
+
+	if ( result.count( "jpeg" ) )
+		jpeg = result["jpeg"].as<double>();
 
 	if ( result.count( "scale" ) )
 		scale = result["scale"].as<int>();
@@ -258,6 +283,6 @@ int main(int argc, char** argv)
 	}
 
 	runOnDir( input, inputDir, output, outputDir, 
-			  radius, sides, debug, length, vertice, scale );
+			  radius, sides, debug, length, vertice, scale, grain, jpeg );
 
 }

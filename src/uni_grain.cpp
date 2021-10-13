@@ -8,12 +8,12 @@ void uni_grain( Magick::Image& input,
 	std::random_device rd;
 	std::mt19937 generator( rd() );
 
-	std::uniform_real_distribution<double> noiseQ( 0.0, 0.13 );
+	std::uniform_real_distribution<double> noiseQ( 0.0, 0.20 );
 	double noiseZ = noiseQ( rd );
 	std::uniform_real_distribution<double> blurQ( 0.1, 0.8 );
 	double blurZ = blurQ( rd );
 
-	std::uniform_int_distribution<int> ranPix( 0, 9 );
+	std::uniform_int_distribution<int> ranPix( 0, 64 );
 	int randPixels = ranPix( rd );
 
 	Magick::Image grainLayer( Magick::Geometry( size ), "fractal" ), singlePixel( "1x1", "#f2f2f2" );
