@@ -58,8 +58,8 @@ void runProcess( std::string& inFile, std::string& outFile,
 		Defocussed = inImg;
 
 		// pad image edges
-		auto Width = Defocussed.columns();
-		auto Height = Defocussed.rows();
+		auto Width = Defocussed.baseColumns();
+		auto Height = Defocussed.baseRows();
 
 		std::string stretchImg;
 		stretchImg += std::to_string( Width + 128 );
@@ -119,11 +119,13 @@ void runProcess( std::string& inFile, std::string& outFile,
 		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
 
 		DefocussedOutput.read( defocusBlob );
-		DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
-		DefocussedOutput.filterType( Magick::PointFilter );
-		DefocussedOutput.resize( outputScale );
+		//DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
+		//if ( scale != 1 ) {
+		//	DefocussedOutput.filterType( Magick::PointFilter );
+		//	DefocussedOutput.resize( outputScale );
+		//}
 
-		int minJ = 60;
+		int minJ = 40;
 		int maxJ = 90;
 
 		int grainChance = twitls::randgen::randomNumber( 0, 100 );
@@ -135,14 +137,22 @@ void runProcess( std::string& inFile, std::string& outFile,
 		//std::cout << "Grain percentage: " << static_cast<int>( grainPercent ) << "\n";
 		//std::cout << "Jpeg percentage: " << static_cast<int>( jpegPercent ) << "\n";
 
-		if ( grainPercent <= static_cast<int>( grainPercent ) ) {
+		if ( grainChance <= static_cast<int>( grainPercent ) ) {
 			uni_grain( DefocussedOutput, Width, Height, size_img );
 		}
 
-		if ( jpegPercent <= static_cast<int>( jpegPercent ) ) {
+		if ( jpegChance <= static_cast<int>( jpegPercent ) ) {
 			//jPegger( DefocussedOutput, minJ, maxJ );
+			DefocussedOutput.sharpen( 0, 0.6 );
 			jPeggMulti( DefocussedOutput, minJ, maxJ );
 		}
+
+		DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
+		if ( scale != 1 ) {
+			DefocussedOutput.filterType( Magick::PointFilter );
+			DefocussedOutput.resize( outputScale );
+		}
+
 		DefocussedOutput.write( outFile );
 	}
 	catch ( Magick::Exception& error_ ) {
