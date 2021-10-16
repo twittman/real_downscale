@@ -33,6 +33,10 @@ void runProcess( std::string& inFile, std::string& outFile,
 		double diameter = radii * 2;
 		int radiVert = sides;
 
+		auto testOut = twitls::count::mapRange( radius, 0.0, 3.0, 10, 50 );
+		//std::cout << "Value: " << testOut << std::endl;
+		std::string scaleVal = std::to_string(testOut) + "%";
+
 		if ( debug == 1 ) {
 			std::cout << "Radii: " << radii << "\n"
 				<< "Diameter: " << diameter << "\n"
@@ -42,7 +46,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		Magick::Blob polyBlob, polyPGM, defocusBlob;
 		try {
 			
-			polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, debug );
+			polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, scaleVal, debug );
 			if ( length >= 3 ) {
 				motion_blur_kernel( length, vertice, debug );
 			};

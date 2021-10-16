@@ -27,10 +27,10 @@ void read_PGM_as_string( const char* filename, std::list<std::string>& lines, in
 }
 
 void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM, 
-				   int radius, int num, 
+				   double radius, int num, 
 				   double rad1, double rad2, double offset, 
 				   double diameter, 
-				   int debug )
+				   std::string& scaleVal, int& debug )
 {
 	int distAmnt_01 = static_cast<int>(rad1) / 7;
 	int distAmnt_02 = static_cast<int>(rad1) / 13;
@@ -51,13 +51,13 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		yy = radius_02 * sin( angle * pi / 180 ) + radius_01 - 0.5;
 		vertice_locations.emplace_back( xx, yy );
 	}
-	defocussBlurr( polyBlob, polyPGM, radius, vertice_locations, static_cast<int>(diameter), distAmnt_01, distAmnt_02, debug );
+	defocussBlurr( polyBlob, polyPGM, radius, vertice_locations, static_cast<int>(diameter), distAmnt_01, distAmnt_02, scaleVal, debug );
 }
 void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM, 
 					int radius, 
 					std::vector<Magick::Coordinate> vertices, 
 					int diameter, int distAmnt_01, int distAmnt_02, 
-					int& debug )
+					std::string& scaleVal, int& debug )
 {
 	try {
 		std::string xDisp;
@@ -136,16 +136,11 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			polyGon.blur( 0, 1.6 );
 		}
 
-
-		if ( radius == 3 ) {
-			polyGon.resize( "50%" );
+		if ( radius <= 3.0 ) {
+			polyGon.resize( Magick::Geometry(scaleVal) );
+			//std::cout << "Scale: " << scaleVal << "\n";
 		}
-		else if ( radius == 2 ) {
-			polyGon.resize( "25%" );
-		}
-		else if ( radius == 1 ) {
-			polyGon.resize( "16%" );
-		}
+		
 
 		try {
 			polyGon.trim();
