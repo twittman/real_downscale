@@ -90,12 +90,6 @@ namespace twitls {
 
 			double inValScaled = double( inVal - fromMin ) / double( fromSpan );
 
-			//std::cout << "Int Span: " << toSpan << "\n";
-			//std::cout << "Float Span: " << fromSpan << "\n";
-			//std::cout << "intValueScaled: " << std::to_string( inValScaled ) << "\n";
-			//std::cout << "InValScaled * fromSpan: " << ( inValScaled * toSpan ) << "\n";
-			//std::cout << "Returned Value: " << ( int(toMin + ( inValScaled * toSpan ) )) << "\n";
-
 			return int(toMin + ( inValScaled * toSpan ));
 		}
 	}
