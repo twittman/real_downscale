@@ -3,7 +3,7 @@
 void runProcess( std::string& inFile, std::string& outFile, 
 				 double& radius, int& sides, int debug, 
 				 int& length, int& vertice, int& scale,
-				 double& grain, double& jpeg )
+				 double& grain, double& jpeg, double& gaussian )
 {
 	try {
 		Magick::EnableOpenCL();
@@ -18,11 +18,11 @@ void runProcess( std::string& inFile, std::string& outFile,
 		//double radii = radius;
 		double radii;
 		double radiusF;
-		if ( radius == 3 ) {
-			radii = 6;
-			radiusF = 6;
+		if ( radius < 3 ) {
+			radii = 8;
+			radiusF = 8;
 		}
-		else if ( radius <= 2 ) {
+		else if ( radius == 2 ) {
 			radii = 6;
 			radiusF = 6;
 		}
@@ -33,20 +33,41 @@ void runProcess( std::string& inFile, std::string& outFile,
 		double diameter = radii * 2;
 		int radiVert = sides;
 
-		auto testOut = twitls::count::mapRange( radius, 0.0, 3.0, 10, 50 );
-		//std::cout << "Value: " << testOut << std::endl;
-		std::string scaleVal = std::to_string(testOut) + "%";
+		auto mapDaRange = twitls::count::mapRange( radius, 0.0, 3.0, 10, 50 );
+		std::string scaleVal = std::to_string( mapDaRange ) + "%";
+		if ( debug == 1 ) {
+			std::cout << "Scale Value: " << scaleVal << "\n";
+		}
+
+		// Getting smol chance of Gaussian Blur instead of deFocus blur //
+		// 0.05 = 5% of images will be Gaussian blurred
+		// May change this to be user input
+		//double Gaussian = 0.05;
+		auto chanceOfGaussianRandomNumer = twitls::randgen::randomNumber( 0, 100 );
+		double chanceOfGaussianPercent = 100 * gaussian;
+		// Getting randomised range of floats for Gaussian Blur
+		double gaussianRange = twitls::randgen::randomDouble( double( radius / 2 ), double( radius * 1.5 ) );
+
 
 		if ( debug == 1 ) {
-			std::cout << "Radii: " << radii << "\n"
-				<< "Diameter: " << diameter << "\n"
-				<< "Sides: " << radiVert << std::endl;;
+			if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
+				std::cout << "\nGaussian: " << gaussianRange << "\n" << std::endl;;
+			}
+			else {
+				std::cout << "Radii: " << radii << "\n"
+					<< "Diameter: " << diameter << "\n"
+					<< "Sides: " << radiVert << std::endl;
+			}
 		}
 		// create defocus polygon shape
 		Magick::Blob polyBlob, polyPGM, defocusBlob;
 		try {
-			
-			polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, scaleVal, debug );
+			if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
+
+			}
+			else {
+				polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, scaleVal, debug );
+			}
 			if ( length >= 3 ) {
 				motion_blur_kernel( length, vertice, debug );
 			};
@@ -87,7 +108,12 @@ void runProcess( std::string& inFile, std::string& outFile,
 		// end pad image edges
 
 		// process blur kernel(s)
-		convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
+		if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
+			gaussianBlur( Defocussed_002, defocusBlob, outFile, Width, Height, size, gaussianRange, debug );
+		}
+		else {
+			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
+		}
 		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
 		};
@@ -104,7 +130,6 @@ void runProcess( std::string& inFile, std::string& outFile,
 				std::filesystem::remove( files );
 			}
 		}
-
 
 		std::string outputScale;
 		switch ( scale ) {
@@ -180,7 +205,7 @@ void runOnDir( std::string& input,
 			   std::filesystem::path& outputDir, 
 			   double& radius, int& sides, int& debug,
 			   int& length, int& vertice, int& scale,
-			   double& grain, double& jpeg )
+			   double& grain, double& jpeg, double& gaussian )
 {
 	int countFiles = twitls::count::countfiles( input );
 	for ( const auto& entry : std::filesystem::directory_iterator( input ) ) {
@@ -199,7 +224,7 @@ void runOnDir( std::string& input,
 			std::string outFileDir = outputDir.string();
 			std::string outFile = outFileDir + '\\' + fileNoPathNoEXT + ".png";
 
-			runProcess( inFileEXT, outFile, radius, sides, debug, length, vertice, scale, grain, jpeg );
+			runProcess( inFileEXT, outFile, radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
 
 			if ( debug != 1 ) {
 				std::cout << "\rNumber of files remaining: " << --countFiles << "\t" << std::flush;
@@ -218,6 +243,7 @@ int main(int argc, char** argv)
 		( "o, output", "output image", cxxopts::value<std::string>() )
 		( "g, grain", "Grain percentage", cxxopts::value<double>() )
 		( "j, jpeg", "Jpeg percentage", cxxopts::value<double>() )
+		( "b, gaussian", "Gaussian blur percentage", cxxopts::value<double>() )
 		( "k, scale", "output image scale", cxxopts::value<int>() )
 		( "r, radius", "defocus radius", cxxopts::value<double>() )
 		( "s, sides", "defocus kernel sides", cxxopts::value<int>() )
@@ -238,6 +264,7 @@ int main(int argc, char** argv)
 	std::string output;
 	double grain;
 	double jpeg;
+	double gaussian;
 	int scale;
 	double radius;
 	int sides;
@@ -253,6 +280,9 @@ int main(int argc, char** argv)
 
 	if ( result.count( "grain" ) )
 		grain = result["grain"].as<double>();
+
+	if ( result.count( "gaussian" ) )
+		gaussian = result["gaussian"].as<double>();
 
 	if ( result.count( "jpeg" ) )
 		jpeg = result["jpeg"].as<double>();
@@ -297,6 +327,6 @@ int main(int argc, char** argv)
 	}
 
 	runOnDir( input, inputDir, output, outputDir, 
-			  radius, sides, debug, length, vertice, scale, grain, jpeg );
+			  radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
 
 }

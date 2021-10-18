@@ -32,26 +32,31 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 				   double diameter, 
 				   std::string& scaleVal, int& debug )
 {
-	int distAmnt_01 = static_cast<int>(rad1) / 7;
-	int distAmnt_02 = static_cast<int>(rad1) / 13;
-	//std::cout << distAmnt << std::endl;
+	try {
+		int distAmnt_01 = static_cast<int>( rad1 ) / 7;
+		int distAmnt_02 = static_cast<int>( rad1 ) / 13;
+		//std::cout << distAmnt << std::endl;
 
-	double pi = 2 * acos( 0.0 );
-	int number_01 = num;
-	double radius_01 = rad1;
-	double radius_02 = rad2;
-	double offset_01 = offset;
-	double xx;
-	double yy;
 
-	std::vector<Magick::Coordinate> vertice_locations;
-	for ( int i = 0; i < number_01; i++ ) {
-		double angle = i * static_cast<double>( 360 ) / number_01 + offset;
-		xx = radius_02 * cos( angle * pi / 180 ) + radius_01 - 0.5;
-		yy = radius_02 * sin( angle * pi / 180 ) + radius_01 - 0.5;
-		vertice_locations.emplace_back( xx, yy );
+		double pi = 2 * acos( 0.0 );
+		int number_01 = num;
+		double radius_01 = rad1;
+		double radius_02 = rad2;
+		double offset_01 = offset;
+		double xx;
+		double yy;
+		std::vector<Magick::Coordinate> vertice_locations;
+		for ( int i = 0; i < number_01; i++ ) {
+			double angle = i * static_cast<double>( 360 ) / number_01 + offset;
+			xx = radius_02 * cos( angle * pi / 180 ) + radius_01 - 0.5;
+			yy = radius_02 * sin( angle * pi / 180 ) + radius_01 - 0.5;
+			vertice_locations.emplace_back( xx, yy );
+		}
+		defocussBlurr( polyBlob, polyPGM, radius, vertice_locations, static_cast<int>( diameter ), distAmnt_01, distAmnt_02, scaleVal, debug );
 	}
-	defocussBlurr( polyBlob, polyPGM, radius, vertice_locations, static_cast<int>(diameter), distAmnt_01, distAmnt_02, scaleVal, debug );
+	catch ( const std::exception& e ) {
+		std::cerr << "Problem with polyVertices_De: " << e.what() << std::endl;
+	}
 }
 void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM, 
 					int radius, 
@@ -63,7 +68,7 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		std::string xDisp;
 		std::string yDisp;
 
-		if ( radius > 9 ) {
+		if ( radius > 6 ) {
 			xDisp = "13x0";
 			yDisp = "0x13";
 		}
@@ -72,20 +77,6 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			yDisp = "0x5";
 		}
 
-		double radii;
-		double radiusF;
-		if ( radius == 3 ) {
-			radii = 6;
-			radiusF = 6;
-		}
-		else if ( radius == 2 ) {
-			radii = 10;
-			radiusF = 10;
-		}
-		else {
-			radii = radius;
-			radiusF = radius;
-		}
 
 		Magick::Image polyGon( Magick::Geometry( diameter, diameter ), "black" ),
 			displaceNoise( Magick::Geometry( diameter, diameter ), "fractal" ),
@@ -129,16 +120,15 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		polyGon.composite( displaceNoise, 0, 0, Magick::DisplaceCompositeOp );
 
 		polyGon.morphology( Magick::DistanceMorphology, Magick::EuclideanKernel, Eucl_01 );
-		if ( radius > 9 ) {
-			polyGon.blur( 0, 2.78 );
+		if ( radius > 5 ) {
+			polyGon.blur( 0, 2.18 );
 		}
 		else {
 			polyGon.blur( 0, 1.6 );
 		}
 
-		if ( radius <= 3.0 ) {
-			polyGon.resize( Magick::Geometry(scaleVal) );
-			//std::cout << "Scale: " << scaleVal << "\n";
+		if ( radius < 3.0 ) {
+			polyGon.resize( scaleVal );
 		}
 		
 
@@ -183,6 +173,6 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 
 	}
 	catch ( Magick::Exception& error_ ) {
-		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
+		std::cerr << "Caught exception, defocus generator: " << error_.what() << std::endl;
 	}
 }

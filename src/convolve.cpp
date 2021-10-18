@@ -36,3 +36,28 @@ void convolve( Magick::Image& Defocussed_002,
 		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
 	}
 }
+void gaussianBlur( Magick::Image& Defocussed_002,
+				   Magick::Blob& defocusBlob,
+				   std::string output,
+				   size_t Width, size_t Height,
+				   std::string size, double& gaussianRange, int debug )
+{
+	try {
+
+		//if ( debug == 1 ) {
+		//	std::cout << "\nGaussian: " << gaussianRange << "\n";
+		//}
+
+		Defocussed_002.read( defocusBlob );
+		makeitgrain( Defocussed_002, defocusBlob, Width, Height, size );
+		Defocussed_002.gaussianBlur( 0, gaussianRange );
+		Defocussed_002.depth( 8 );
+		Defocussed_002.colorSpace( Magick::sRGBColorspace );
+		Defocussed_002.magick( "PNG" );
+		Defocussed_002.write( &defocusBlob );
+
+	}
+	catch ( Magick::Exception& error_ ) {
+		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
+	}
+}

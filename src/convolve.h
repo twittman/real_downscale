@@ -15,3 +15,8 @@ void convolve( Magick::Image& Defocussed,
 			   std::string output,
 			   size_t Width, size_t Height,
 			   std::string size, std::string polyStr, int debug );
+void gaussianBlur( Magick::Image& Defocussed_002,
+				   Magick::Blob& defocusBlob,
+				   std::string output,
+				   size_t Width, size_t Height,
+				   std::string size, double& gaussianRange, int debug );

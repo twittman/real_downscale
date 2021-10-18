@@ -117,6 +117,14 @@ namespace twitls {
 			int rNum = r01( generator );
 			return rNum;
 		}
+		double randomDouble( const double low, const double high )
+		{
+			std::random_device rd;
+			std::mt19937 generator( rd() );
+			std::uniform_real_distribution r01( low, high );
+			double rNum = r01( generator );
+			return rNum;
+		}
 		std::string pickSampling()
 		{
 			srand( (unsigned int)time( NULL ) );
