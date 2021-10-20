@@ -9,7 +9,9 @@
 #include <filesystem>
 #include "make_it_grain.h"
 
-
+void fuzzyBloom( Magick::Image Defocussed_002,
+				 Magick::Blob& defocusBlob,
+				 double& diameter );
 void convolve( Magick::Image& Defocussed,
 			   Magick::Blob& defocusBlob,
 			   std::string output,

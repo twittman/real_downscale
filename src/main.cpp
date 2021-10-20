@@ -6,8 +6,8 @@ void runProcess( std::string& inFile, std::string& outFile,
 				 double& grain, double& jpeg, double& gaussian )
 {
 	try {
-		Magick::EnableOpenCL();
-		Magick::InitializeMagick;
+		//Magick::EnableOpenCL();
+		Magick::InitializeMagick("");
 		Magick::Image inImg, Defocussed, Defocussed_002, DefocussedOutput;
 
 		inImg.read( inFile );
@@ -32,6 +32,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		}
 		double diameter = radii * 2;
 		int radiVert = sides;
+		double bloomDia = radius * 2;
 
 		auto mapDaRange = twitls::count::mapRange( radius, 0.0, 3.0, 10, 50 );
 		std::string scaleVal = std::to_string( mapDaRange ) + "%";
@@ -113,11 +114,16 @@ void runProcess( std::string& inFile, std::string& outFile,
 		}
 		else {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
+			fuzzyBloom( Defocussed_002, defocusBlob, bloomDia );
 		}
 		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
 		};
 		// check for txt files and remove all
+		// To-do:
+		//	make all txt and pgm and png kernel files 
+		//	named as the input images are with prepends
+		//
 		std::vector<std::string> filesForRemove = { "poly.txt",
 													"poly.pgm",
 													"poly_new.txt",
@@ -148,11 +154,6 @@ void runProcess( std::string& inFile, std::string& outFile,
 		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
 
 		DefocussedOutput.read( defocusBlob );
-		//DefocussedOutput.crop( Magick::Geometry( Width, Height, 64, 64 ) );
-		//if ( scale != 1 ) {
-		//	DefocussedOutput.filterType( Magick::PointFilter );
-		//	DefocussedOutput.resize( outputScale );
-		//}
 
 		int minJ = 40;
 		int maxJ = 90;

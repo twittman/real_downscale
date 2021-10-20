@@ -1,5 +1,24 @@
 #include "convolve.h"
 
+void fuzzyBloom( Magick::Image Defocussed_002,
+				 Magick::Blob& defocusBlob,
+				 double& diameter )
+{
+	double intensity = diameter / 32;
+	//std::cout << "Intensity: " << intensity << std::endl;
+	Magick::Image bloom;
+	bloom = Defocussed_002;
+	bloom.threshold( QuantumRange / 2.38 );
+	bloom.blur( 0, diameter );
+	bloom.alpha( false );
+	bloom.alpha( true );
+	bloom.evaluate( Magick::AlphaChannel, Magick::MultiplyEvaluateOperator, intensity );
+	Defocussed_002.composite( bloom, 0, 0, Magick::ScreenCompositeOp );
+	Defocussed_002.depth( 8 );
+	Defocussed_002.colorSpace( Magick::sRGBColorspace );
+	Defocussed_002.magick( "PNG" );
+	Defocussed_002.write( &defocusBlob );
+}
 void convolve( Magick::Image& Defocussed_002,
 					 Magick::Blob& defocusBlob, 
 					 std::string output, 
@@ -7,6 +26,7 @@ void convolve( Magick::Image& Defocussed_002,
 					 std::string size, std::string polyStr, int debug )
 {
 	try {
+		Magick::EnableOpenCL();
 		std::ifstream textOpen;
 		textOpen.open( polyStr );
 		std::string str( ( std::istreambuf_iterator<char>( textOpen ) ),
