@@ -78,7 +78,7 @@ void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debu
 	}
 }
 // generate vertices
-void motion_blur_kernel( int& maxlength, int& vertices, int& debug )
+void motion_blur_kernel( int& maxlength, int& vertices, std::string& fileNoPathNoEXT, int& debug )
 {
 	std::random_device rd;
 	std::mt19937 generator( rd() );

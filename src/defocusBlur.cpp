@@ -30,7 +30,8 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 				   double radius, int num, 
 				   double rad1, double rad2, double offset, 
 				   double diameter, 
-				   std::string& scaleVal, int& debug )
+				   std::string& scaleVal, 
+				   std::string& fileNoPathNoEXT, int& debug )
 {
 	try {
 		int distAmnt_01 = static_cast<int>( rad1 ) / 7;
@@ -52,7 +53,12 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 			yy = radius_02 * sin( angle * pi / 180 ) + radius_01 - 0.5;
 			vertice_locations.emplace_back( xx, yy );
 		}
-		defocussBlurr( polyBlob, polyPGM, radius, vertice_locations, static_cast<int>( diameter ), distAmnt_01, distAmnt_02, scaleVal, debug );
+		defocussBlurr( polyBlob, polyPGM, 
+					   radius, vertice_locations, 
+					   static_cast<int>( diameter ), 
+					   distAmnt_01, distAmnt_02, 
+					   scaleVal,
+					   fileNoPathNoEXT, debug );
 	}
 	catch ( const std::exception& e ) {
 		std::cerr << "Problem with polyVertices_De: " << e.what() << std::endl;
@@ -62,7 +68,8 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					int radius, 
 					std::vector<Magick::Coordinate> vertices, 
 					int diameter, int distAmnt_01, int distAmnt_02, 
-					std::string& scaleVal, int& debug )
+					std::string& scaleVal,
+					std::string& fileNoPathNoEXT, int& debug )
 {
 	try {
 		std::string xDisp;

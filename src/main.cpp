@@ -1,6 +1,7 @@
 #include "main.h"
 
 void runProcess( std::string& inFile, std::string& outFile, 
+				 std::string& fileNoPathNoEXT,
 				 double& radius, int& sides, int debug, 
 				 int& length, int& vertice, int& scale,
 				 double& grain, double& jpeg, double& gaussian )
@@ -40,6 +41,10 @@ void runProcess( std::string& inFile, std::string& outFile,
 			std::cout << "Scale Value: " << scaleVal << "\n";
 		}
 
+		std::string polyDeFocusName = fileNoPathNoEXT + "_Poly";
+		std::string polyMotionName = fileNoPathNoEXT + "_Motion";
+
+
 		// Getting smol chance of Gaussian Blur instead of deFocus blur //
 		// 0.05 = 5% of images will be Gaussian blurred
 		// May change this to be user input
@@ -67,10 +72,15 @@ void runProcess( std::string& inFile, std::string& outFile,
 
 			}
 			else {
-				polyVertices_De( polyBlob, polyPGM, static_cast<int>( radius ), radiVert, radii, radii, -90.0, diameter, scaleVal, debug );
+				polyVertices_De( polyBlob, polyPGM, 
+								 static_cast<int>( radius ), radiVert, 
+								 radii, radii, -90.0, 
+								 diameter, 
+								 scaleVal, 
+								 fileNoPathNoEXT, debug );
 			}
 			if ( length >= 3 ) {
-				motion_blur_kernel( length, vertice, debug );
+				motion_blur_kernel( length, vertice, fileNoPathNoEXT ,debug );
 			};
 		} catch ( Magick::Exception& error_ ) {
 			std::cerr << "Caught exception Polygon generation: " << error_.what() << std::endl;
@@ -122,7 +132,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		// check for txt files and remove all
 		// To-do:
 		//	make all txt and pgm and png kernel files 
-		//	named as the input images are with prepends
+		//	named as the input images are with prepends or appends
 		//
 		std::vector<std::string> filesForRemove = { "poly.txt",
 													"poly.pgm",
@@ -225,7 +235,7 @@ void runOnDir( std::string& input,
 			std::string outFileDir = outputDir.string();
 			std::string outFile = outFileDir + '\\' + fileNoPathNoEXT + ".png";
 
-			runProcess( inFileEXT, outFile, radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
+			runProcess( inFileEXT, outFile, fileNoPathNoEXT, radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
 
 			if ( debug != 1 ) {
 				std::cout << "\rNumber of files remaining: " << --countFiles << "\t" << std::flush;
@@ -309,9 +319,29 @@ int main(int argc, char** argv)
 	std::filesystem::path inputDir( input );
 	std::filesystem::path outputDir( output );
 
-	if ( std::filesystem::create_directory( outputDir ) ) {
-		std::cout << output << " Directory created" << "\n";
+	std::string overwrite;
+	if ( std::filesystem::exists( output ) ) {
+		std::cout << "Output directory currently exists, do you want to overwrite? ";
+		std::cin >> overwrite;
+		if ( overwrite == "yes" ) {
+			std::filesystem::remove_all( output );
+			if ( std::filesystem::create_directory( outputDir ) ) {
+				std::cout << output << " Directory created" << "\n";
+			}
+		}
+		else if ( overwrite == "no" ) {
+			return 0;
+		}
 	}
+	else {
+		if ( std::filesystem::create_directory( outputDir ) ) {
+			std::cout << output << " Directory created" << "\n";
+		}
+	}
+
+	//if ( std::filesystem::create_directory( outputDir ) ) {
+	//	std::cout << output << " Directory created" << "\n";
+	//}
 
 	// first check if text files exist from previous run //
 	std::vector<std::string> filesForRemove = { "poly.txt",
