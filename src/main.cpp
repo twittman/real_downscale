@@ -47,8 +47,6 @@ void runProcess( std::string& inFile, std::string& outFile,
 
 		// Getting smol chance of Gaussian Blur instead of deFocus blur //
 		// 0.05 = 5% of images will be Gaussian blurred
-		// May change this to be user input
-		//double Gaussian = 0.05;
 		auto chanceOfGaussianRandomNumer = twitls::randgen::randomNumber( 0, 100 );
 		double chanceOfGaussianPercent = 100 * gaussian;
 		// Getting randomised range of floats for Gaussian Blur
@@ -162,6 +160,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		}
 
 		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
+		std::string size_img_b = std::to_string( Width * 1.5 ) + "x" + std::to_string( Height * 1.5 );
 
 		DefocussedOutput.read( defocusBlob );
 
@@ -178,7 +177,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		//std::cout << "Jpeg percentage: " << static_cast<int>( jpegPercent ) << "\n";
 
 		if ( grainChance <= static_cast<int>( grainPercent ) ) {
-			uni_grain( DefocussedOutput, Width, Height, size_img );
+			uni_grain( DefocussedOutput, Width, Height, size_img_b );
 		}
 
 		if ( jpegChance <= static_cast<int>( jpegPercent ) ) {
@@ -323,10 +322,11 @@ int main(int argc, char** argv)
 	if ( std::filesystem::exists( output ) ) {
 		std::cout << "Output directory currently exists, do you want to overwrite? ";
 		std::cin >> overwrite;
-		if ( overwrite == "yes" ) {
+		if ( overwrite == "yes" || overwrite == "y" || overwrite == "yer" ) {
 			std::filesystem::remove_all( output );
 			if ( std::filesystem::create_directory( outputDir ) ) {
-				std::cout << output << " Directory created" << "\n";
+				std::cout << output << " Directory has been cleansed" << "\n";
+				std::cout << output << " Directory has been created" << "\n";
 			}
 		}
 		else if ( overwrite == "no" ) {
@@ -335,7 +335,7 @@ int main(int argc, char** argv)
 	}
 	else {
 		if ( std::filesystem::create_directory( outputDir ) ) {
-			std::cout << output << " Directory created" << "\n";
+			std::cout << output << " Directory has been created" << "\n";
 		}
 	}
 

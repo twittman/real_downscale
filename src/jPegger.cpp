@@ -44,10 +44,8 @@ void jPeggMulti( Magick::Image& input, int& minJ, int& maxJ )
 	const int rolVal = 39;
 	const int rotVal = 2;
 	int times = 1;
-	//std::cout << "\nChosen value: " << rNum << std::endl;
 	for ( int i = 1; i < compressionTimes; i++ ) {
 		// generate separate X and Y roll values
-
 		std::uniform_int_distribution<int> specialSequence01( -rolVal, rolVal );
 		int xRollAmt = specialSequence01( rd );
 		std::uniform_int_distribution<int> specialSequence02( -rolVal, rolVal );

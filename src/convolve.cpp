@@ -4,11 +4,22 @@ void fuzzyBloom( Magick::Image Defocussed_002,
 				 Magick::Blob& defocusBlob,
 				 double& diameter )
 {
-	double intensity = diameter / 32;
-	//std::cout << "Intensity: " << intensity << std::endl;
+	std::random_device rd;
+	std::mt19937 generator( rd() );
+	std::uniform_int_distribution r01( 0, 32 );
+	int intensityHighChance = r01( generator );
+
+	double intensity;
+	if ( intensityHighChance == 6 || intensityHighChance == 12 ) {
+		intensity = diameter / 18;
+	}
+	else {
+		intensity = diameter / 30;
+	}
+
 	Magick::Image bloom;
 	bloom = Defocussed_002;
-	bloom.threshold( QuantumRange / 2.38 );
+	bloom.threshold( QuantumRange / 2.40 );
 	bloom.blur( 0, diameter );
 	bloom.alpha( false );
 	bloom.alpha( true );
@@ -37,9 +48,6 @@ void convolve( Magick::Image& Defocussed_002,
 			std::cout << "\nKernel: " << kernel_motion << "\n";
 		}
 
-		//std::filesystem::remove( polyStr );
-		//std::filesystem::remove( "poly.txt" );
-
 		// convolve with defocus blur kernel
 		Defocussed_002.read( defocusBlob );
 		makeitgrain( Defocussed_002, defocusBlob, Width, Height, size );
@@ -63,10 +71,6 @@ void gaussianBlur( Magick::Image& Defocussed_002,
 				   std::string size, double& gaussianRange, int debug )
 {
 	try {
-
-		//if ( debug == 1 ) {
-		//	std::cout << "\nGaussian: " << gaussianRange << "\n";
-		//}
 
 		Defocussed_002.read( defocusBlob );
 		makeitgrain( Defocussed_002, defocusBlob, Width, Height, size );

@@ -8,9 +8,9 @@ void read_PGM_as_string_mB( const char* filename, std::list<std::string>& lines,
 	std::string s;
 	while ( std::getline( file, s ) )
 		lines.push_back( s );
-	lines.pop_front();
-	lines.pop_front();
-	lines.pop_front();
+		lines.pop_front();
+		lines.pop_front();
+		lines.pop_front();
 
 	std::ostringstream stringReplace;
 
@@ -18,8 +18,6 @@ void read_PGM_as_string_mB( const char* filename, std::list<std::string>& lines,
 	std::string width_height = stringReplace.str();
 	lines.push_front( width_height );
 }
-
-
 // Create the polygon shape
 void mBlurr( std::vector<Magick::Coordinate> vertices, int& maxlength, int& debug )
 {
