@@ -4,25 +4,22 @@ void fuzzyBloom( Magick::Image Defocussed_002,
 				 Magick::Blob& defocusBlob,
 				 double& diameter )
 {
-	std::random_device rd;
-	std::mt19937 generator( rd() );
-	std::uniform_int_distribution r01( 0, 32 );
-	int intensityHighChance = r01( generator );
+	//std::random_device rd;
+	//std::mt19937 generator( rd() );
+	//std::uniform_int_distribution r01( 0, 32 );
+	//int intensityHighChance = r01( generator );
 
 	double intensity;
-	if ( intensityHighChance == 6 || intensityHighChance == 12 ) {
-		intensity = diameter / 18;
-	}
-	else {
-		intensity = diameter / 30;
-	}
+	double blurIntensity;
+	intensity = diameter / 34;
+	blurIntensity = diameter * 1.75;
 
 	Magick::Image bloom;
 	bloom = Defocussed_002;
-	bloom.threshold( QuantumRange / 2.40 );
-	bloom.blur( 0, diameter );
 	bloom.alpha( false );
 	bloom.alpha( true );
+	bloom.threshold( QuantumRange / 2.74 );
+	bloom.blur( 0, blurIntensity );
 	bloom.evaluate( Magick::AlphaChannel, Magick::MultiplyEvaluateOperator, intensity );
 	Defocussed_002.composite( bloom, 0, 0, Magick::ScreenCompositeOp );
 	Defocussed_002.depth( 8 );

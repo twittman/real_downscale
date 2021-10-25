@@ -122,7 +122,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		}
 		else {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
-			fuzzyBloom( Defocussed_002, defocusBlob, bloomDia );
+			//fuzzyBloom( Defocussed_002, defocusBlob, bloomDia );
 		}
 		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
