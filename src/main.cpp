@@ -145,19 +145,54 @@ void runProcess( std::string& inFile, std::string& outFile,
 			}
 		}
 
+		//std::string outputScale;
+		//switch ( scale ) {
+		//	case 1:
+		//		outputScale = "100%"; break;
+		//	case 2:
+		//		outputScale = "50%"; break;
+		//	case 3:
+		//		outputScale = "33.3%"; break;
+		//	case 4:
+		//		outputScale = "25%"; break;
+		//	case 5:
+		//		outputScale = "20%"; break;
+		//	case 6:
+		//		outputScale = "16.6%"; break;
+		//	case 7:
+		//		outputScale = "14.3%"; break;
+		//	case 8:
+		//		outputScale = "12.5%"; break;
+		//	case 9:
+		//		outputScale = "11.1%"; break;
+		//	case 10:
+		//		outputScale = "10%"; break;
+		//	case 11:
+		//		outputScale = "9.1%"; break;
+		//	case 12:
+		//		outputScale = "8.3%"; break;
+		//	case 13:
+		//		outputScale = "7.69%"; break;
+		//	case 14:
+		//		outputScale = "7.14%"; break;
+		//	case 15:
+		//		outputScale = "6.66%"; break;
+		//	case 16:
+		//		outputScale = "6.25%"; break;
+		//	default:
+		//		outputScale = "25%"; break;
+		//}
+
 		std::string outputScale;
-		switch ( scale ) {
-			case 1:
-				outputScale = "100%"; break;
-			case 2:
-				outputScale = "50%"; break;
-			case 3:
-				outputScale = "33.3%"; break;
-			case 4:
-				outputScale = "25%"; break;
-			default:
-				outputScale = "25%"; break;
-		}
+
+		float outScaleF = 100 / static_cast<float>(scale);
+		float outScaleFi = round( outScaleF * 1000.0 ) / 1000.0;
+
+		outputScale += std::to_string( outScaleFi );
+		outputScale += "%";
+
+		std::cout << "Scale: " << outputScale << "\n";
+
 
 		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
 		std::string size_img_b = std::to_string( Width * 1.5 ) + "x" + std::to_string( Height * 1.5 );
@@ -320,7 +355,7 @@ int main(int argc, char** argv)
 
 	std::string overwrite;
 	if ( std::filesystem::exists( output ) ) {
-		std::cout << "Output directory currently exists, do you want to overwrite? ";
+		std::cout << "Output directory currently exists, do you want to overwrite? [Y}es, [N]o ";
 		std::cin >> overwrite;
 		if ( overwrite == "yes" || overwrite == "y" || overwrite == "yer" ) {
 			std::filesystem::remove_all( output );
