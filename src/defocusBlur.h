@@ -14,10 +14,11 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					std::vector<Magick::Coordinate> vertices,
 					int diameter, int distAmnt_01, int distAmnt_02,
 					std::string& scaleVal,
-					std::string& fileNoPathNoEXT, int& debug );
+					std::string& fileNoPathNoEXT, 
+					std::stringstream& buffered, int& debug, int& memory );
 
 void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 				   double radius, int num,
 				   double rad1, double rad2, double offset,
 				   double diameter, std::string& scaleVal, 
-			       std::string& fileNoPathNoEXT, int& debug );
+			       std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory );

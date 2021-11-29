@@ -31,7 +31,7 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 				   double rad1, double rad2, double offset, 
 				   double diameter, 
 				   std::string& scaleVal, 
-				   std::string& fileNoPathNoEXT, int& debug )
+				   std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory )
 {
 	try {
 		int distAmnt_01 = static_cast<int>( rad1 ) / 7;
@@ -58,7 +58,7 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					   static_cast<int>( diameter ), 
 					   distAmnt_01, distAmnt_02, 
 					   scaleVal,
-					   fileNoPathNoEXT, debug );
+					   fileNoPathNoEXT, buffered, debug, memory );
 	}
 	catch ( const std::exception& e ) {
 		std::cerr << "Problem with polyVertices_De: " << e.what() << std::endl;
@@ -69,7 +69,7 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					std::vector<Magick::Coordinate> vertices, 
 					int diameter, int distAmnt_01, int distAmnt_02, 
 					std::string& scaleVal,
-					std::string& fileNoPathNoEXT, int& debug )
+					std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory )
 {
 	try {
 		std::string xDisp;
@@ -166,18 +166,28 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		polyBlobPGM.magick( "PGM" );
 		polyBlobPGM.compressType( Magick::NoCompression );
 		polyBlobPGM.depth( 8 );
-		polyBlobPGM.write( "poly.txt" );
 
 		std::list<std::string> lines;
-		read_PGM_as_string( "poly.txt", lines, polyWidth, polyHeight );
 		std::ofstream text;
-		text.open( "poly_new.txt" );
-		for ( auto v : lines ) {
-			text << v << "\n";
-			//std::cout << v << std::endl;
-		}
-		text.close();
 
+		if ( memory == 1 ) {
+			polyBlobPGM.write( "poly.txt" );
+			read_PGM_as_string( "poly.txt", lines, polyWidth, polyHeight );
+			for ( auto v : lines ) {
+				buffered << v << "\n";
+				//std::cout << v << std::endl;
+			}
+		}
+		else {
+			polyBlobPGM.write( "poly.txt" );
+			read_PGM_as_string( "poly.txt", lines, polyWidth, polyHeight );
+			text.open( "poly_new.txt" );
+			for ( auto v : lines ) {
+				text << v << "\n";
+				//std::cout << v << std::endl;
+			}
+			text.close();
+		}
 	}
 	catch ( Magick::Exception& error_ ) {
 		std::cerr << "Caught exception, defocus generator: " << error_.what() << std::endl;

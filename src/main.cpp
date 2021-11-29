@@ -4,7 +4,8 @@ void runProcess( std::string& inFile, std::string& outFile,
 				 std::string& fileNoPathNoEXT,
 				 double& radius, int& sides, int debug, 
 				 int& length, int& vertice, int& scale,
-				 double& grain, double& jpeg, double& gaussian )
+				 double& grain, double& jpeg, double& gaussian,
+				 int& memory)
 {
 	try {
 		//Magick::EnableOpenCL();
@@ -52,6 +53,19 @@ void runProcess( std::string& inFile, std::string& outFile,
 		// Getting randomised range of floats for Gaussian Blur
 		double gaussianRange = twitls::randgen::randomDouble( double( radius / 2 ), double( radius * 1.5 ) );
 
+		// process blur kernel(s)
+		std::string polyStr;
+		std::string polyStrM;
+		std::stringstream buffered;
+		std::stringstream bufferedM;
+		if ( memory == 1 ) {
+			polyStr = "";
+			polyStrM = "";
+		}
+		else {
+			polyStr = "poly_new.txt";
+			polyStrM = "mBpoly_new.txt";
+		}
 
 		if ( debug == 1 ) {
 			if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
@@ -75,7 +89,8 @@ void runProcess( std::string& inFile, std::string& outFile,
 								 radii, radii, -90.0, 
 								 diameter, 
 								 scaleVal, 
-								 fileNoPathNoEXT, debug );
+								 fileNoPathNoEXT, 
+								 buffered, debug, memory );
 			}
 			if ( length >= 3 ) {
 				motion_blur_kernel( length, vertice, fileNoPathNoEXT ,debug );
@@ -116,16 +131,30 @@ void runProcess( std::string& inFile, std::string& outFile,
 		Defocussed.write( &defocusBlob );
 		// end pad image edges
 
-		// process blur kernel(s)
+		//// process blur kernel(s)
+		//std::string polyStr;
+		//std::string polyStrM;
+		//std::stringstream buffered;
+		//std::stringstream bufferedM;
+		//if ( memory == 1 ) {
+		//	polyStr = "";
+		//	polyStrM = "";
+		//}
+		//else {
+		//	polyStr = "poly_new.txt";
+		//	polyStrM = "mBpoly_new.txt";
+		//}
+
+
 		if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
 			gaussianBlur( Defocussed_002, defocusBlob, outFile, Width, Height, size, gaussianRange, debug );
 		}
 		else {
-			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "poly_new.txt", debug );
+			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, polyStr, buffered, memory, debug );
 			//fuzzyBloom( Defocussed_002, defocusBlob, bloomDia );
 		}
 		if ( length >= 3 ) {
-			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, "mBpoly_new.txt", debug );
+			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, polyStrM, bufferedM, memory, debug );
 		};
 		// check for txt files and remove all
 		// To-do:
@@ -145,44 +174,6 @@ void runProcess( std::string& inFile, std::string& outFile,
 			}
 		}
 
-		//std::string outputScale;
-		//switch ( scale ) {
-		//	case 1:
-		//		outputScale = "100%"; break;
-		//	case 2:
-		//		outputScale = "50%"; break;
-		//	case 3:
-		//		outputScale = "33.3%"; break;
-		//	case 4:
-		//		outputScale = "25%"; break;
-		//	case 5:
-		//		outputScale = "20%"; break;
-		//	case 6:
-		//		outputScale = "16.6%"; break;
-		//	case 7:
-		//		outputScale = "14.3%"; break;
-		//	case 8:
-		//		outputScale = "12.5%"; break;
-		//	case 9:
-		//		outputScale = "11.1%"; break;
-		//	case 10:
-		//		outputScale = "10%"; break;
-		//	case 11:
-		//		outputScale = "9.1%"; break;
-		//	case 12:
-		//		outputScale = "8.3%"; break;
-		//	case 13:
-		//		outputScale = "7.69%"; break;
-		//	case 14:
-		//		outputScale = "7.14%"; break;
-		//	case 15:
-		//		outputScale = "6.66%"; break;
-		//	case 16:
-		//		outputScale = "6.25%"; break;
-		//	default:
-		//		outputScale = "25%"; break;
-		//}
-
 		std::string outputScale;
 
 		float outScaleF = 100 / static_cast<float>(scale);
@@ -191,7 +182,7 @@ void runProcess( std::string& inFile, std::string& outFile,
 		outputScale += std::to_string( outScaleFi );
 		outputScale += "%";
 
-		std::cout << "Scale: " << outputScale << "\n";
+		//std::cout << "Scale: " << outputScale << "\n";
 
 
 		std::string size_img = std::to_string( Width ) + "x" + std::to_string( Height );
@@ -250,7 +241,8 @@ void runOnDir( std::string& input,
 			   std::filesystem::path& outputDir, 
 			   double& radius, int& sides, int& debug,
 			   int& length, int& vertice, int& scale,
-			   double& grain, double& jpeg, double& gaussian )
+			   double& grain, double& jpeg, double& gaussian,
+			   int& memory)
 {
 	int countFiles = twitls::count::countfiles( input );
 	for ( const auto& entry : std::filesystem::directory_iterator( input ) ) {
@@ -269,7 +261,9 @@ void runOnDir( std::string& input,
 			std::string outFileDir = outputDir.string();
 			std::string outFile = outFileDir + '\\' + fileNoPathNoEXT + ".png";
 
-			runProcess( inFileEXT, outFile, fileNoPathNoEXT, radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
+			runProcess( inFileEXT, outFile, fileNoPathNoEXT, 
+						radius, sides, debug, length, vertice, 
+						scale, grain, jpeg, gaussian, memory );
 
 			if ( debug != 1 ) {
 				std::cout << "\rNumber of files remaining: " << --countFiles << "\t" << std::flush;
@@ -294,6 +288,7 @@ int main(int argc, char** argv)
 		( "s, sides", "defocus kernel sides", cxxopts::value<int>() )
 		( "l, length", "motion blur length", cxxopts::value<int>() )
 		( "v, vertice", "motion blur corners", cxxopts::value<int>() )
+		( "m, memory", "process kernels in memory?", cxxopts::value<int>() )
 		( "d, debug", "save kernels?", cxxopts::value<int>() )
 		( "h, help", "print help" )
 		;
@@ -315,6 +310,7 @@ int main(int argc, char** argv)
 	int sides;
 	int length;
 	int vertice;
+	int memory = 0;
 	int debug;
 
 	if ( result.count( "input" ) )
@@ -346,6 +342,9 @@ int main(int argc, char** argv)
 
 	if ( result.count( "vertice" ) )
 		vertice = result["vertice"].as<int>();
+
+	if ( result.count( "memory" ) )
+		memory = result["memory"].as<int>();
 
 	if ( result.count( "debug" ) )
 		debug = result["debug"].as<int>();
@@ -393,6 +392,6 @@ int main(int argc, char** argv)
 	}
 
 	runOnDir( input, inputDir, output, outputDir, 
-			  radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian );
+			  radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian, memory );
 
 }

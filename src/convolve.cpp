@@ -31,16 +31,24 @@ void convolve( Magick::Image& Defocussed_002,
 					 Magick::Blob& defocusBlob, 
 					 std::string output, 
 					 size_t Width, size_t Height, 
-					 std::string size, std::string polyStr, int debug )
+					 std::string size, std::string polyStr, 
+					 std::stringstream& buffered, int& memory, int debug )
 {
 	try {
 		Magick::EnableOpenCL();
-		std::ifstream textOpen;
-		textOpen.open( polyStr );
-		std::string str( ( std::istreambuf_iterator<char>( textOpen ) ),
-						 std::istreambuf_iterator<char>() );
-		std::string kernel_motion = str;
-		textOpen.close();
+		std::string kernel_motion;
+		if ( memory == 1 ) {
+			kernel_motion = buffered.str();
+		}
+		else {
+			std::ifstream textOpen;
+			textOpen.open( polyStr );
+			std::string str( ( std::istreambuf_iterator<char>( textOpen ) ),
+							 std::istreambuf_iterator<char>() );
+			kernel_motion = str;
+			textOpen.close();
+		}
+
 		if ( debug == 1 ) {
 			std::cout << "\nKernel: " << kernel_motion << "\n";
 		}
