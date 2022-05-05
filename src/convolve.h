@@ -10,14 +10,18 @@
 #include "make_it_grain.h"
 
 void fuzzyBloom( Magick::Image Defocussed_002,
+				 Magick::Image SharpForBloom,
 				 Magick::Blob& defocusBlob,
-				 double& diameter );
+				 std::string polyStr,
+				 std::stringstream& buffered, int& memory, int debug, double& Radii);
+
 void convolve( Magick::Image& Defocussed,
 			   Magick::Blob& defocusBlob,
 			   std::string output,
 			   size_t Width, size_t Height,
 			   std::string size, std::string polyStr, 
 			   std::stringstream& buffered, int& memory, int debug );
+
 void gaussianBlur( Magick::Image& Defocussed_002,
 				   Magick::Blob& defocusBlob,
 				   std::string output,

@@ -1,31 +1,68 @@
 #include "convolve.h"
 
-void fuzzyBloom( Magick::Image Defocussed_002,
-				 Magick::Blob& defocusBlob,
-				 double& diameter )
+void fuzzyBloom(	Magick::Image Defocussed_002,
+					Magick::Image SharpForBloom,
+					Magick::Blob& defocusBlob,
+					std::string polyStr,
+					std::stringstream& buffered, int& memory, int debug, double& Radii)
 {
-	//std::random_device rd;
-	//std::mt19937 generator( rd() );
-	//std::uniform_int_distribution r01( 0, 32 );
-	//int intensityHighChance = r01( generator );
-
-	double intensity;
-	double blurIntensity;
-	intensity = diameter / 34;
-	blurIntensity = diameter * 1.75;
+	std::string kernel_motion;
+	if (memory == 1) {
+		kernel_motion = buffered.str();
+	}
+	else {
+		std::ifstream textOpen;
+		textOpen.open(polyStr);
+		std::string str((std::istreambuf_iterator<char>(textOpen)),
+			std::istreambuf_iterator<char>());
+		kernel_motion = str;
+		textOpen.close();
+	}
 
 	Magick::Image bloom;
-	bloom = Defocussed_002;
+	bloom = SharpForBloom;
 	bloom.alpha( false );
 	bloom.alpha( true );
-	bloom.threshold( QuantumRange / 2.74 );
-	bloom.blur( 0, blurIntensity );
-	bloom.evaluate( Magick::AlphaChannel, Magick::MultiplyEvaluateOperator, intensity );
+
+	// convert threshold in to single pixels for convolution?? //
+	bloom.threshold(QuantumRange / 1.32);
+	bloom.morphology(Magick::HitAndMissMorphology, "peaks", 2);
+	bloom.morphology(Magick::DilateMorphology, "Disk");
+	bloom.gaussianBlur(0, 0.64);
+	bloom.write("output/peaks1.png");
+
+	bloom.artifact("convolve:scale", "\!");
+	bloom.morphology(Magick::ConvolveMorphology, kernel_motion);
+	bloom.artifact("convolve:scale", "1");
+
+	bloom.sharpen(0, 1.22);
+	
+	//bloom.write("output/peaks2.png");
+
+
+	//double raVal = 0;
+	double doValMin = 32;
+	double dnValMin = 0.18;
+
+	double nVal = (dnValMin / Radii) * doValMin;
+
+	//for (int i = 0; i < 20; i++) {
+	//	int incr = raVal++;
+	//	double nVal2 = (dnValMin / static_cast<double>(incr)) * doValMin;
+	//	std::cout << std::to_string(incr) << ": " << std::to_string(nVal2) << "\n";
+	//}
+
+	//std::cout << "Level: " << std::to_string(nVal) << "\n";
+
+	bloom.level(0, QuantumRange*nVal, 1.0);
+	//bloom.write("output/peaks3.png");
+
 	Defocussed_002.composite( bloom, 0, 0, Magick::ScreenCompositeOp );
 	Defocussed_002.depth( 8 );
 	Defocussed_002.colorSpace( Magick::sRGBColorspace );
 	Defocussed_002.magick( "PNG" );
 	Defocussed_002.write( &defocusBlob );
+
 }
 void convolve( Magick::Image& Defocussed_002,
 					 Magick::Blob& defocusBlob, 
@@ -66,6 +103,7 @@ void convolve( Magick::Image& Defocussed_002,
 
 	}
 	catch ( Magick::Exception& error_ ) {
+		Magick::ErrorType::exception;
 		std::cerr << "Caught exception, first convolution: " << error_.what() << std::endl;
 	}
 }

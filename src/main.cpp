@@ -5,12 +5,12 @@ void runProcess( std::string& inFile, std::string& outFile,
 				 double& radius, int& sides, int debug, 
 				 int& length, int& vertice, int& scale,
 				 double& grain, double& jpeg, double& gaussian,
-				 int& memory)
+				 int& memory, double& Radii)
 {
 	try {
 		//Magick::EnableOpenCL();
 		Magick::InitializeMagick("");
-		Magick::Image inImg, Defocussed, Defocussed_002, DefocussedOutput;
+		Magick::Image inImg, Defocussed, Defocussed_002, SharpForBloom, DefocussedOutput;
 
 		inImg.read( inFile );
 		inImg.depth( 16 );
@@ -54,10 +54,27 @@ void runProcess( std::string& inFile, std::string& outFile,
 		double gaussianRange = twitls::randgen::randomDouble( double( radius / 2 ), double( radius * 1.5 ) );
 
 		// process blur kernel(s)
+		double ranRot;
+		double largeRadiiB;
+		double smallRadiiB;
+
+		int largeDispl;
+		int smallDispl;
+
 		std::string polyStr;
 		std::string polyStrM;
 		std::stringstream buffered;
 		std::stringstream bufferedM;
+
+		ranRot = twitls::randgen::randomDouble(-30, 30);
+
+		largeRadiiB = twitls::randgen::randomDouble(3,10);
+		smallRadiiB = twitls::randgen::randomDouble(0,3);
+
+		largeDispl = twitls::randgen::randomNumber(2, 8);
+		smallDispl = twitls::randgen::randomNumber(0, 4);
+
+
 		if ( memory == 1 ) {
 			polyStr = "";
 			polyStrM = "";
@@ -90,7 +107,8 @@ void runProcess( std::string& inFile, std::string& outFile,
 								 diameter, 
 								 scaleVal, 
 								 fileNoPathNoEXT, 
-								 buffered, debug, memory );
+								 buffered, debug, memory,
+								 largeRadiiB, smallRadiiB, largeDispl, smallDispl, ranRot);
 			}
 			if ( length >= 3 ) {
 				motion_blur_kernel( length, vertice, fileNoPathNoEXT ,debug );
@@ -130,32 +148,19 @@ void runProcess( std::string& inFile, std::string& outFile,
 		Defocussed.magick( "PNG" );
 		Defocussed.write( &defocusBlob );
 		// end pad image edges
-
-		//// process blur kernel(s)
-		//std::string polyStr;
-		//std::string polyStrM;
-		//std::stringstream buffered;
-		//std::stringstream bufferedM;
-		//if ( memory == 1 ) {
-		//	polyStr = "";
-		//	polyStrM = "";
-		//}
-		//else {
-		//	polyStr = "poly_new.txt";
-		//	polyStrM = "mBpoly_new.txt";
-		//}
-
+		SharpForBloom.read(defocusBlob);
 
 		if ( chanceOfGaussianRandomNumer <= static_cast<int>( chanceOfGaussianPercent ) ) {
 			gaussianBlur( Defocussed_002, defocusBlob, outFile, Width, Height, size, gaussianRange, debug );
 		}
 		else {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, polyStr, buffered, memory, debug );
-			//fuzzyBloom( Defocussed_002, defocusBlob, bloomDia );
+			fuzzyBloom( Defocussed_002, SharpForBloom, defocusBlob, polyStr, buffered, memory, debug, Radii);
 		}
 		if ( length >= 3 ) {
 			convolve( Defocussed_002, defocusBlob, outFile, Width, Height, size, polyStrM, bufferedM, memory, debug );
 		};
+
 		// check for txt files and remove all
 		// To-do:
 		//	make all txt and pgm and png kernel files 
@@ -242,7 +247,7 @@ void runOnDir( std::string& input,
 			   double& radius, int& sides, int& debug,
 			   int& length, int& vertice, int& scale,
 			   double& grain, double& jpeg, double& gaussian,
-			   int& memory)
+			   int& memory, double& Radii)
 {
 	int countFiles = twitls::count::countfiles( input );
 	for ( const auto& entry : std::filesystem::directory_iterator( input ) ) {
@@ -263,7 +268,7 @@ void runOnDir( std::string& input,
 
 			runProcess( inFileEXT, outFile, fileNoPathNoEXT, 
 						radius, sides, debug, length, vertice, 
-						scale, grain, jpeg, gaussian, memory );
+						scale, grain, jpeg, gaussian, memory, Radii);
 
 			if ( debug != 1 ) {
 				std::cout << "\rNumber of files remaining: " << --countFiles << "\t" << std::flush;
@@ -271,7 +276,6 @@ void runOnDir( std::string& input,
 
 		}
 	}
-
 }
 
 int main(int argc, char** argv)
@@ -392,6 +396,6 @@ int main(int argc, char** argv)
 	}
 
 	runOnDir( input, inputDir, output, outputDir, 
-			  radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian, memory );
+			  radius, sides, debug, length, vertice, scale, grain, jpeg, gaussian, memory, radius);
 
 }

@@ -31,7 +31,8 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 				   double rad1, double rad2, double offset, 
 				   double diameter, 
 				   std::string& scaleVal, 
-				   std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory )
+				   std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory,
+					double& largeRadiiB, double& smallRadiiB, int& largeDispl, int& smallDispl, double& ranRot)
 {
 	try {
 		int distAmnt_01 = static_cast<int>( rad1 ) / 7;
@@ -58,7 +59,8 @@ void polyVertices_De( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					   static_cast<int>( diameter ), 
 					   distAmnt_01, distAmnt_02, 
 					   scaleVal,
-					   fileNoPathNoEXT, buffered, debug, memory );
+					   fileNoPathNoEXT, buffered, debug, memory,
+					   largeRadiiB, smallRadiiB, largeDispl, smallDispl, ranRot);
 	}
 	catch ( const std::exception& e ) {
 		std::cerr << "Problem with polyVertices_De: " << e.what() << std::endl;
@@ -69,35 +71,48 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 					std::vector<Magick::Coordinate> vertices, 
 					int diameter, int distAmnt_01, int distAmnt_02, 
 					std::string& scaleVal,
-					std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory )
+					std::string& fileNoPathNoEXT, std::stringstream& buffered, int& debug, int& memory,
+					double& largeRadiiB, double& smallRadiiB, int& largeDispl, int& smallDispl, double& ranRot)
 {
+
+
+
 	try {
 		std::string xDisp;
 		std::string yDisp;
 
-		if ( radius > 6 ) {
-			xDisp = "13x0";
-			yDisp = "0x13";
+		if (radius > 6) {
+			xDisp = std::to_string(largeDispl) + "x" + std::to_string(0);
+			yDisp = std::to_string(0) + "x" + std::to_string(largeDispl);
 		}
 		else {
-			xDisp = "5x0";
-			yDisp = "0x5";
+			xDisp = std::to_string(smallDispl) + "x" + std::to_string(0);
+			yDisp = std::to_string(0) + "x" + std::to_string(smallDispl);
 		}
 
+		//if ( radius > 6 ) {
+		//	xDisp = "13x0";
+		//	yDisp = "0x13";
+		//}
+		//else {
+		//	xDisp = "5x0";
+		//	yDisp = "0x5";
+		//}
 
 		Magick::Image polyGon( Magick::Geometry( diameter, diameter ), "black" ),
 			displaceNoise( Magick::Geometry( diameter, diameter ), "fractal" ),
 			polyGon8x,
 			polyBlobPGM;
+		Magick::Blob bufferBlob;
 		//std::cout << "\nGenerating grain for displacement\n";
 		displaceNoise.resize( "1000%" );
 		displaceNoise.addNoise( Magick::PoissonNoise );
 
 		if ( radius > 12 ) {
-			displaceNoise.gaussianBlur( 0, 11 );
+			displaceNoise.gaussianBlur( 0, largeRadiiB );
 		}
 		else {
-			displaceNoise.gaussianBlur( 0, 5 );
+			displaceNoise.gaussianBlur( 0, smallRadiiB);
 		}
 
 		displaceNoise.colorSpace( Magick::GRAYColorspace );
@@ -126,12 +141,15 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 		polyGon.artifact( "compose:args", yDisp );
 		polyGon.composite( displaceNoise, 0, 0, Magick::DisplaceCompositeOp );
 
+		polyGon.backgroundColor(Magick::Color("black"));
+		polyGon.rotate(ranRot);
+
 		polyGon.morphology( Magick::DistanceMorphology, Magick::EuclideanKernel, Eucl_01 );
 		if ( radius > 5 ) {
 			polyGon.blur( 0, 2.18 );
 		}
 		else {
-			polyGon.blur( 0, 1.6 );
+			polyGon.blur( 0, 1.4 );
 		}
 
 		if ( radius < 3.0 ) {
@@ -169,9 +187,13 @@ void defocussBlurr( Magick::Blob polyBlob, Magick::Blob polyPGM,
 
 		std::list<std::string> lines;
 		std::ofstream text;
+		std::stringstream* textBuff;
 
 		if ( memory == 1 ) {
 			polyBlobPGM.write( "poly.txt" );
+			/*polyBlobPGM.write( &bufferBlob );
+			void* b = static_cast<void*>( &bufferBlob );
+			textBuff = static_cast<std::stringstream*>( b );*/
 			read_PGM_as_string( "poly.txt", lines, polyWidth, polyHeight );
 			for ( auto v : lines ) {
 				buffered << v << "\n";
