@@ -29,7 +29,7 @@ void fuzzyBloom(	Magick::Image Defocussed_002,
 	bloom.morphology(Magick::HitAndMissMorphology, "peaks", 2);
 	bloom.morphology(Magick::DilateMorphology, "Disk");
 	bloom.gaussianBlur(0, 0.64);
-	bloom.write("output/peaks1.png");
+	//bloom.write("output/peaks1.png");
 
 	bloom.artifact("convolve:scale", "\!");
 	bloom.morphology(Magick::ConvolveMorphology, kernel_motion);
@@ -42,7 +42,7 @@ void fuzzyBloom(	Magick::Image Defocussed_002,
 
 	//double raVal = 0;
 	double doValMin = 32;
-	double dnValMin = 0.18;
+	double dnValMin = 0.23;
 
 	double nVal = (dnValMin / Radii) * doValMin;
 
@@ -52,7 +52,7 @@ void fuzzyBloom(	Magick::Image Defocussed_002,
 	//	std::cout << std::to_string(incr) << ": " << std::to_string(nVal2) << "\n";
 	//}
 
-	//std::cout << "Level: " << std::to_string(nVal) << "\n";
+	std::cout << "Level: " << std::to_string(nVal) << "\n";
 
 	bloom.level(0, QuantumRange*nVal, 1.0);
 	//bloom.write("output/peaks3.png");
